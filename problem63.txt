@@ -1,0 +1,29 @@
+For each n, 10^n is (n+1)-digits which is just too large, so need only consider
+powers of k for 1 <= k <= 9. No such k^n is longer than n digits, so the
+problem is to count the number of k such that 10^(n-1) <= k^n for each n
+or, rearranging, the pairs (k, n) such that k >= 10^(1-1/n). There is no such
+k for n >= 22, and for 1 <= n <= 21 the minimal such k are:
+
+1   1
+2   4
+3   5
+4   6
+5   7
+6   7
+7   8
+8   8
+9   8
+10  8
+11  9
+12  9
+13  9
+14  9
+15  9
+16  9
+17  9
+18  9
+19  9
+20  9
+21  9
+
+There are (10-min(k)) such numbers for each n, which adds up to 49.
