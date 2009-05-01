@@ -69,7 +69,8 @@ for (my $length = 1; $length <= $max_length; $length += 1) {
 	@suffices = @new_suffices;
 	@new_suffices = undef;
 
-	printf STDERR "%d: %d\n", $length, (scalar @suffices);
+	printf STDOUT "%d: %d\n", $length, (scalar @suffices);
+	printf STDOUT "%s\n", (join "\n", @suffices);
 }
 
 #my $found_suffix = undef;
