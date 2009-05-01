@@ -13,10 +13,10 @@ use Math::BigInt;
 
 # Idea is to build up possible values for n from the right.
 
-my @suffices = (Math::BigInt->new());
+my @suffices = (0);
 
-my $power_of_ten = Math::BigInt->new(1);
-my $last_power_of_ten = Math::BigInt->new(1);
+my $power_of_ten = 1;
+my $last_power_of_ten = 1;
 
 my $max_digit = 9;
 my $max_length = 8;
@@ -32,7 +32,7 @@ for (my $length = 1; $length <= $max_length; $length += 1) {
 	
 	# $power_of_ten contains the modulus to cut everything down
 	# to $length digits.
-	$power_of_ten->bmul(10);
+	$power_of_ten *= 10;
 
 	# Know that the number is <= 1.4 * 10^$max_length
 	if ($length == $max_length) {
@@ -42,15 +42,15 @@ for (my $length = 1; $length <= $max_length; $length += 1) {
 	my @new_suffices = ();
 	# Try every possible digit/suffix pair.
 	for (my $new_digit = 0; $new_digit <= $max_digit; $new_digit += 1) {
-		my $new_digit_int 
-			= Math::BigInt->new($new_digit)->bmul($last_power_of_ten);
+		my $new_digit_int = $new_digit * $last_power_of_ten;
 		foreach my $suffix (@suffices) {
-			my $new_suffix = $suffix->copy()->badd($new_digit_int);
+			my $new_suffix = $suffix + $new_digit_int;
 			if ($length % 2 == 0) {
 				# No constraints on the even-numbered positions
 				push @new_suffices, $new_suffix;
 			} else {
-				my $nhead = $new_suffix->copy()->bmodpow(2, $power_of_ten)
+				my $nhead = Math::BigInt->new($new_suffix)
+					->bmodpow(2, $power_of_ten)
 					->bdiv($last_power_of_ten)->bstr();
 				if ($nhead eq $required_head) {
 #					printf "%s squares to %s\n", $new_suffix->bstr(), 
@@ -64,7 +64,7 @@ for (my $length = 1; $length <= $max_length; $length += 1) {
 		}
 	}
 
-	$last_power_of_ten->bmul(10);
+	$last_power_of_ten *= 10;
 
 	@suffices = @new_suffices;
 	@new_suffices = undef;
@@ -75,11 +75,11 @@ for (my $length = 1; $length <= $max_length; $length += 1) {
 #my $found_suffix = undef;
 
 for my $suffix (@suffices) {
-	$suffix->badd($last_power_of_ten)->bmul(10);
-	my $nsq = $suffix->copy()->bpow(2)->bstr();
+	my $n = Math::BigInt->new($suffix)->badd($last_power_of_ten)->bmul(10);
+	my $nsq = $n->copy()->bpow(2)->bstr();
 	if ($nsq =~ /1.2.3.4.5.6.7.8.9.0/) {
 #		$found_suffix = $suffix->copy();
-		printf "%s^2 = %s\n", $suffix->bstr(), $nsq;
+		printf "%s^2 = %s\n", $n, $nsq;
 	}
 #	printf "%s^2 = %s\n", $suffix->bstr(), $nsq;
 }
