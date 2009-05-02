@@ -1,141 +1,87 @@
 #include <stdio.h>
 
-/* The 80,000th prime is > 1 million */
+#define MAX_PRIME (1*1000*1000)
+char * isComposite;
 
-#define NUMBER_OF_PRIMES 800000
-
-int primes[NUMBER_OF_PRIMES];
-
-void fillPrimes() {
-	primes[0] = 2;
-	primes[1] = 3;
-	int primeCount = 2;
-	int n, p;
-	int isPrime;
-	for (n = 5; primeCount < NUMBER_OF_PRIMES; n+=2) {
-		isPrime = 1;
-		for (p = 0; primes[p]*primes[p] <= n && isPrime && p < primeCount; p++) {
-			if (n % primes[p] == 0) {
-				isPrime = 0;
-			}
+int fillComposites() {
+	isComposite = malloc(MAX_PRIME);
+	if (0 == isComposite) {
+		printf("Allocation failure\n");
+		return 1;
+	}
+	memset(isComposite, 0, MAX_PRIME);
+	isComposite[0] = 1;
+	isComposite[1] = 1;
+	int i;
+	for (i = 2; i < MAX_PRIME; i++) {
+		if (isComposite[i]) {
+			continue;
 		}
-		if (isPrime) {
-			primes[primeCount++] = n;
-		}
-	}
-}
 
-int isPrime(int n) {
-	if (n > primes[NUMBER_OF_PRIMES-1]) {
-		//fprintf(stderr, "Cannot test %d for primality: too large\n", n);
-		return 0;
-	}
-	if (n < 2) {
-		return 0;
-	}
-
-	/* printf("Testing %d\n", n); */
-
-	int left = 0;
-	int right = NUMBER_OF_PRIMES;
-	while (right != left) {
-		int mid = (right+left)/2;
-		/* printf("Range [%d, %d] : %d\n", left, right, mid); */
-		if (primes[mid] < n) {
-			left = mid + 1;
-		} else if (primes[mid] > n) {
-			right = mid;
-		} else {
-			return 1;
+		int j;
+		for (j = 2 * i; j < MAX_PRIME; j += i) {
+			isComposite[j] = 1;
 		}
 	}
 	return 0;
 }
 
-// 9C3 possibilities for common difference
-// (not 10C3 since assuming no overflow)
-#define COMMON_DIFFERENCE_COUNT 84
-int commonDifferences[COMMON_DIFFERENCE_COUNT];
+int isPrime(int n) {
+	if (0 <= n && n < MAX_PRIME) {
+		return (0 == isComposite[n]);
+	}
 
-void fillCommonDifferences() {
-	int power1, power2, power3;
-	int i = 0;
-	for (power1 = 100; power1 < 1000000000; power1 *= 10) {
-		for (power2 = 10; power2 < power1; power2 *= 10) {
-			for (power3 = 1; power3 < power2; power3 *= 10) {
-				commonDifferences[i++] = power1 + power2 + power3;
-			}
-		}
-	}
-	if (COMMON_DIFFERENCE_COUNT != i) {
-		printf("Found %d common differences, expected %d\n", i,
-			COMMON_DIFFERENCE_COUNT);
-	}
-}
-
-int matchingDigits(int p, int cd) {
-	int dig = -1;
-	while (cd) {
-		if (cd % 10) {
-			if (-1 == dig) {
-				dig = p % 10;
-				if (dig > 2) {
-					return -1;
-				}
-			} else {
-				if (p % 10 != dig) {
-					return -1;
-				}
-			}
-		}
-		cd /= 10;
-		p /= 10;
-	}
-	return dig;
+	fprintf(stderr, "%d out of range\n", n);
+	return 0;
 }
 
 int main() {
-	fillPrimes();
-	fillCommonDifferences();
-
-	if ( !(isPrime(2090021)
-		&& isPrime(2191121)
-		&& isPrime(2292221)
-		&& isPrime(2494421)
-		&& isPrime(2595521)
-		&& isPrime(2696621)
-		&& isPrime(2898821)
-		&& isPrime(2999921)) )  {
-
-		printf("Argh - 2090021 isn't good\n");
-	
-	} else {
-		printf("2090021 is good, but not right\n");
+	if (fillComposites()) {
+		return 1;
 	}
 
-	int p;
-	for (p = 0; p < NUMBER_OF_PRIMES; p++) {
-		if (primes[p] > 2090021) {
-			break;
+	int n;
+	char nString[20];
+	for (n = 10000; n < MAX_PRIME; n++) {
+		if (!isPrime(n)) {
+			continue;
 		}
-		int cd;
-		for (cd = 0; cd < COMMON_DIFFERENCE_COUNT; cd++) {
-			int dig = matchingDigits(primes[p], commonDifferences[cd]);
-			if (-1 == dig) {
+		snprintf(nString, 20, "%d", n);
+
+		// Know that it must be a multiple of 3 digits being
+		// replaced, because if not then more than 2 of the 
+		// resulting numbers will be divisible by 3.
+		//
+		// Therefore assume it's exactly 3 (it won't be 6 unless
+		// the number is quite a bit bigger) and see what happens...
+		char *p1;
+		for (p1 = nString; *p1; p1 += 1) {
+			if (*p1 > '2') {
 				continue;
 			}
-
-			int k;
-			int compositesCount = 0;
-			for (k = 1; k <= 9 && compositesCount <= (3-dig); k++) {
-				if (!isPrime(primes[p] + k * commonDifferences[cd])) {
-					compositesCount += 1;
+			char *p2;
+			for (p2 = nString; p2 < p1; p2 += 1) {
+				if ((*p1) != (*p2)) {
+					continue;
 				}
-			}
-			if (compositesCount <= (3-dig)) {
-				printf("%d %d\n", primes[p], commonDifferences[cd]);
-			//	cd = COMMON_DIFFERENCE_COUNT;
-			//	p = NUMBER_OF_PRIMES;
+				char *p3;
+				for (p3 = nString; p3 < p2; p3 += 1) {
+					if ((*p1) != (*p3)) {
+						continue;
+					}
+					int primeCount = 0;
+					char c;
+					for (c = '0'; c <= '9'; c++) {
+						*p1 = *p2 = *p3 = c;
+						if (isPrime(strtol(nString, 0, 0))) {
+							primeCount += 1;
+						}
+					}
+					if (primeCount >= 8) {
+						*p1 = *p2 = *p3 = '*';
+						printf("%d : %s\n", n, nString);
+					}
+				}
 			}
 		}
 	}
