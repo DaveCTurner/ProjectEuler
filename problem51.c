@@ -2,7 +2,7 @@
 
 /* The 80,000th prime is > 1 million */
 
-#define NUMBER_OF_PRIMES 80000
+#define NUMBER_OF_PRIMES 800000
 
 int primes[NUMBER_OF_PRIMES];
 
@@ -27,7 +27,7 @@ void fillPrimes() {
 
 int isPrime(int n) {
 	if (n > primes[NUMBER_OF_PRIMES-1]) {
-		fprintf(stderr, "Cannot test %d for primality: too large\n", n);
+		//fprintf(stderr, "Cannot test %d for primality: too large\n", n);
 		return 0;
 	}
 	if (n < 2) {
@@ -52,22 +52,91 @@ int isPrime(int n) {
 	return 0;
 }
 
-void tryReplaceDigits(char * buffer, int bufferSize, int digit) {
-	char 
+// 9C3 possibilities for common difference
+// (not 10C3 since assuming no overflow)
+#define COMMON_DIFFERENCE_COUNT 84
+int commonDifferences[COMMON_DIFFERENCE_COUNT];
+
+void fillCommonDifferences() {
+	int power1, power2, power3;
+	int i = 0;
+	for (power1 = 100; power1 < 1000000000; power1 *= 10) {
+		for (power2 = 10; power2 < power1; power2 *= 10) {
+			for (power3 = 1; power3 < power2; power3 *= 10) {
+				commonDifferences[i++] = power1 + power2 + power3;
+			}
+		}
+	}
+	if (COMMON_DIFFERENCE_COUNT != i) {
+		printf("Found %d common differences, expected %d\n", i,
+			COMMON_DIFFERENCE_COUNT);
+	}
+}
+
+int matchingDigits(int p, int cd) {
+	int dig = -1;
+	while (cd) {
+		if (cd % 10) {
+			if (-1 == dig) {
+				dig = p % 10;
+				if (dig > 2) {
+					return -1;
+				}
+			} else {
+				if (p % 10 != dig) {
+					return -1;
+				}
+			}
+		}
+		cd /= 10;
+		p /= 10;
+	}
+	return dig;
 }
 
 int main() {
 	fillPrimes();
-	int truncatablePrimesTotal = 0;
-	char primeBuffer[13];
+	fillCommonDifferences();
+
+	if ( !(isPrime(2090021)
+		&& isPrime(2191121)
+		&& isPrime(2292221)
+		&& isPrime(2494421)
+		&& isPrime(2595521)
+		&& isPrime(2696621)
+		&& isPrime(2898821)
+		&& isPrime(2999921)) )  {
+
+		printf("Argh - 2090021 isn't good\n");
 	
-	int i;
-	for (i = 0; i < NUMBER_OF_PRIMES; i++) {
-		int n = primes[i];
-		snprintf(primeBuffer, 13, "%d", n);
-		tryReplaceDigits(primeBuffer, 13, 0);
-		tryReplaceDigits(primeBuffer, 13, 1);
-		tryReplaceDigits(primeBuffer, 13, 2);
-		tryReplaceDigits(primeBuffer, 13, 3);
+	} else {
+		printf("2090021 is good, but not right\n");
+	}
+
+	int p;
+	for (p = 0; p < NUMBER_OF_PRIMES; p++) {
+		if (primes[p] > 2090021) {
+			break;
+		}
+		int cd;
+		for (cd = 0; cd < COMMON_DIFFERENCE_COUNT; cd++) {
+			int dig = matchingDigits(primes[p], commonDifferences[cd]);
+			if (-1 == dig) {
+				continue;
+			}
+
+			int k;
+			int compositesCount = 0;
+			for (k = 1; k <= 9 && compositesCount <= (3-dig); k++) {
+				if (!isPrime(primes[p] + k * commonDifferences[cd])) {
+					compositesCount += 1;
+				}
+			}
+			if (compositesCount <= (3-dig)) {
+				printf("%d %d\n", primes[p], commonDifferences[cd]);
+			//	cd = COMMON_DIFFERENCE_COUNT;
+			//	p = NUMBER_OF_PRIMES;
+			}
+		}
 	}
 }
