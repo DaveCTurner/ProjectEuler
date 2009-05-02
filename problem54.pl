@@ -217,12 +217,12 @@ for my $handString (<>) {
 		last if ($c);
 	}
 	my $interesting = 0;
-	$interesting = 1 if ($handRank1->[0] > 3);
-	$interesting = 1 if ($handRank2->[0] > 3);
-	$interesting = 1
-		if ($handRank1->[0] == $handRank2->[0]
-			&& $handRank1->[1] == $handRank2->[1]
-			&& $handRank1->[0] > 1);
+#	$interesting = 1 if ($handRank1->[0] > 3);
+#	$interesting = 1 if ($handRank2->[0] > 3);
+#	$interesting = 1
+#		if ($handRank1->[0] == $handRank2->[0]
+#			&& $handRank1->[1] == $handRank2->[1]
+#			&& $handRank1->[0] > 1);
 
 	printHands($hand) if $interesting;
 	
