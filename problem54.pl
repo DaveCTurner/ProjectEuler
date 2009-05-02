@@ -118,7 +118,8 @@ sub rankHand {
 			$straightStart = 0;
 			last;
 		}
-		if (0 == $rankFrequencies[$rank] && $straightStart) {
+		if (0 == $rankFrequencies[$rank] && $straightStart
+				&& ($rank - $straightStart < 5)) {
 			# Found a gap, so not a straight.
 			$straightStart = 0;
 			last;
