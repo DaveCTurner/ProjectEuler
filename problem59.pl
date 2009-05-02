@@ -37,8 +37,8 @@ for ($passcodeTry[0] = 1; $passcodeTry[0] <= 26; $passcodeTry[0] += 1) {
 				print "$password\n";
 				my $total = 0;
 				map { $total += $_ } unpack 'C*', $decoded;
-				print "$total\n";
 				print "$decoded\n\n";
+				print "$total\n";
 			}
 
 		}
