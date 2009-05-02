@@ -20,8 +20,8 @@ my %rankScores = (
 
 my %suitScores = (
 	C => 1,
-	D => 3,
-	H => 2,
+	D => 2,
+	H => 3,
 	S => 4,
 );
 
