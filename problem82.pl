@@ -68,6 +68,7 @@ for (my $col = 1; $col < $colCount; $col += 1) {
 
 my $shortestPath = undef;
 for (my $row = 0; $row < $colSize; $row += 1) {
+	printf "%09d\n", $array->[$row]->[$colCount-1];
 	if (!defined($shortestPath)
 			|| $array->[$row]->[$colCount-1] < $shortestPath) {
 		$shortestPath = $array->[$row]->[$colCount-1];
