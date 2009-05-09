@@ -1,5 +1,11 @@
 #!/usr/bin/perl
 
+# NB This has a bug, although it still works on the test data.
+# The bug is that we only update nodes whose path depends on other updated
+# nodes in the recursion. In particular, this algorithm fails to answer
+# problem 82 correctly, where some node gets improved so much that it changes
+# the paths of other nodes around it.
+
 use strict;
 
 my $allowLeftMoves = 0;
