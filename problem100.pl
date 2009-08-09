@@ -10,13 +10,17 @@ my $m = Math::BigInt->new(0); # Square this
 my $m_acc = Math::BigInt->new(0); # = m^2
 
 my $threshold = Math::BigInt->new('1000000000000');
+$n = $threshold->copy();
+$n_acc = $n->copy()->bsub(1)->bmul(2)->bmul($n)->badd(1);
+
+$m = $threshold->copy()->bmul(70)->bdiv(100);
+$m_acc = $m->copy()->bpow(2);
 
 while(1) {
 	my $cmp = $n_acc->bcmp($m_acc);
 
 	if (0 == $cmp) {
-		my $p = $n->copy()->bsub(1)->bmul(2)->bmul($n)->badd(1)->bsqrt()
-			->badd(1)->bdiv(2)->bstr();
+		my $p = $m->badd(1)->bdiv(2)->bstr();
 		printf("n = %s, m = %s, 2n(n-1)+1 = m^2 = %s, p = %s\n", $n->bstr(),
 			$m->bstr(), $n_acc->bstr(), $p);
 		if ($threshold->bcmp($n) < 0) {
