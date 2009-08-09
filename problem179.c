@@ -1,75 +1,60 @@
 #include <stdio.h>
 #include <math.h>
 
-#define MAX_PRIME (1*1000*1000)
-char * isComposite;
-
-int fillComposites() {
-	isComposite = malloc(MAX_PRIME);
-	if (0 == isComposite) {
-		printf("Allocation failure\n");
-		return 1;
-	}
-	memset(isComposite, 0, MAX_PRIME);
-
-	int sqrt_max_prime = (int)sqrt((double)MAX_PRIME) + 2;
-	
-	isComposite[0] = 1;
-	isComposite[1] = 1;
-	int i;
-	for (i = 4; i < MAX_PRIME; i+=2) {
-		isComposite[i] = 1;
-	}
-	for (i = 3; i < sqrt_max_prime; i+=2) {
-		if (isComposite[i]) {
-			continue;
-		}
-
-		int j;
-		for (j = i * i; j < MAX_PRIME; j += i) {
-			isComposite[j] = 1;
-		}
-	}
-	return 0;
-}
-
-int count_divisors(int n) {
-	int divisors = 1;
-	int current_prime = 2;
-
-	while (n > 1) {
-		if (n < current_prime * current_prime) { return divisors * 2; }
-
-		int power = 0;
-		while (0 == (n % current_prime)) {
-			power += 1;
-			n /= current_prime;
-		}
-		if (power > 0) {
-			divisors *= power + 1;
-		}
-
-		do { current_prime ++; } while (isComposite[current_prime]);
-	}
-	return divisors;
-}
-
 int main() {
-	if (fillComposites()) {
+	int * largest_prime_divisors;
+	if (0 == (largest_prime_divisors
+			= (int *) malloc(10000001 * sizeof(int)))) {
 		return 1;
 	}
-	int last_n_divisors = 2;
-	int count = 0;
+	memset(largest_prime_divisors, 0, 10000001 * sizeof(int));
+
 	int n;
-	for (n = 3; n <= 10000000; n++) {
-		int current_n_divisors = count_divisors(n);
-		//printf("%d has %d divisors\n", n, current_n_divisors);
-		if (current_n_divisors == last_n_divisors) {
-//			printf("%d and %d both have %d divisors\n", n-1, n,
-//				current_n_divisors);
+	largest_prime_divisors[1] = 1;
+	for (n = 2; n <= 3200; n++) {
+		if (largest_prime_divisors[n]) { continue; }
+		printf("%d\n", n);
+		int d = 2 * n;
+		while (d <= 10000000) {
+			largest_prime_divisors[d] = n;
+			d += n;
+		}
+	}
+	
+	int * divisors_count;
+	if (0 == (divisors_count = (int *) malloc(10000001 * sizeof(int)))) {
+		return 1;
+	}
+
+	divisors_count[1] = 1;
+
+	for (n = 2; n <= 10000000; n++) {
+		if (0 == (n % 1000000)) { printf("%d\n", n); }
+
+		int current_prime = largest_prime_divisors[n];
+		if (0 == current_prime) {
+			// is prime
+			divisors_count[n] = 2;
+			//printf("%d is prime\n", n);
+		} else {
+			int power = 0;
+			int next_n = n;
+			while (0 == (next_n % current_prime)) {
+				power += 1;
+				next_n /= current_prime;
+			}
+			divisors_count[n] = divisors_count[next_n] * (1 + power);
+			//printf("%d has %d divisors\n", n, divisors_count[n]);
+		}
+	}
+	
+	int count = 0;
+	for (n = 2; n < 10000000; n++) {
+		if (divisors_count[n] == divisors_count[n+1]) {
+/*			printf("%d and %d both have %d divisors\n", n, n+1,
+				divisors_count[n]); */
 			count += 1;
 		}
-		last_n_divisors = current_n_divisors;
 	}
 	printf("%d\n", count);
 }
